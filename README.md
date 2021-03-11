@@ -1,4 +1,4 @@
-# Terraform AWS Backend
+# Terraform Module AWS Backend
 Creates the AWS resources for the terraform backend
 
 ## Variables
@@ -27,7 +27,7 @@ provider "aws" {
 }
 
 module "backend" {
-    source = "github.com/Haplo-tech/Terraform.Module.AWS.Backend"
+    source = "github.com/gavanlamb/terraform-module-aws.backend"
     company = ""
     environment = ""
     name = ""
