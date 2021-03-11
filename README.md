@@ -16,7 +16,7 @@ Creates the AWS resources for the terraform backend
 | dynamodb_name | Name of the dynamodb                                           |
 | dynamodb_tags | Tags                                                           |
 
-## How to 
+## How to
 Specify the module source and the provider information.
 
 ### Sample
@@ -27,7 +27,7 @@ provider "aws" {
 }
 
 module "backend" {
-    source = "github.com/gavanlamb/terraform-module-aws.backend"
+    source = "github.com/gavanlamb/terraform-module-aws-backend"
     company = ""
     environment = ""
     name = ""
