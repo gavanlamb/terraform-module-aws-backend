@@ -20,7 +20,7 @@ Creates the AWS resources for the terraform backend
 Specify the module source and the provider information.
 
 ### Sample
-```
+```hcl
 provider "aws" {
     region = "${var.region}"
     shared_credentials_file = "${var.credentials_file}"
