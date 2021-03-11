@@ -27,6 +27,12 @@ resource "aws_s3_bucket" "terraform_remote_state" {
 
   tags = merge(local.default_tags, var.bucket_tags)
 }
+resource "aws_s3_account_public_access_block" "terraform_remote_state" {
+  block_public_acls       = true
+  block_public_policy     = true
+  restrict_public_buckets = true
+  ignore_public_acls      = true
+}
 resource "aws_iam_policy" "terraform_remote_state" {
   name = aws_s3_bucket.terraform_remote_state.id
   path = "/${var.iam_path}/"
