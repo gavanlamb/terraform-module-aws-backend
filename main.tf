@@ -1,13 +1,3 @@
-locals {
-  default_tags = {
-    Company = var.company
-    Environment = var.environment
-    Name = var.name
-    service = var.service
-    ManagedBy = "Terraform"
-  }
-}
-
 resource "aws_iam_group" "terraform_remote_state" {
   name = var.group_name
   path = "/${var.iam_path}/"

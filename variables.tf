@@ -40,3 +40,13 @@ variable "dynamodb_tags" {
   type = "map"
   default = {}
 }
+
+locals {
+  default_tags = {
+    Company = var.company
+    Environment = var.environment
+    Name = var.name
+    service = var.service
+    ManagedBy = "Terraform"
+  }
+}
