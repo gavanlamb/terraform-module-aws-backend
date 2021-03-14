@@ -31,7 +31,7 @@ module "backend" {
     iam_path	   = "terraform"
     username       = "terraform"
     user_tags      = {}
-    user_pgp_key   = "pgp:admin"
+    user_pgp_key   = "keybase:admin"
     bucket_name    = "terraform"
     bucket_tags    = {}
     dynamodb_name  = "terraform_lock"
