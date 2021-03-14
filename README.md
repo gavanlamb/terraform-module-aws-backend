@@ -1,20 +1,19 @@
 # Terraform Module AWS Backend
-Creates the AWS resources for the terraform backend
+Provision AWS resources for Terraform backend
 
 ## Variables
-### Input
-| Variables     | Description                                                    |
-|:--------------|:---------------------------------------------------------------|
-| company       | Company name                                                   |
-| environment   | Environment name                                               |
-| name          | Name                                                           |
-| service       | Service name                                                   |
-| group_name    | The group name for all the terraform policies backend policies |
-| iam_path      | The path to store IAM policies and groups                      |
-| bucket_name   | Name of the bucket                                             |
-| bucket_tags   | Tags                                                           |
-| dynamodb_name | Name of the dynamodb                                           |
-| dynamodb_tags | Tags                                                           |
+| Variables     | Description                                                                                                                                                                                                                                                                               | Default     | Example                 |    |    |
+|:--------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------|:------------------------|:---|:---|
+| environment   | Environment name. This value is used in tags.                                                                                                                                                                                                                                             |             | `production`            |    |    |
+| name          | Name of infrastructure. This value is used in tags.                                                                                                                                                                                                                                       |             | `gavanlamb`             |    |    |
+| iam_path      | Path name to store IAM policies and groups.                                                                                                                                                                                                                                               | `terraform` | `terraform`             |    |    |
+| username      | The user's name. The name must consist of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: =,.@-_.. User names are not distinguished by case. For example, you cannot create users named both 'TESTUSER' and 'testuser'. | `terraform` | `creator`               |    |    |
+| user_tags     | Tags to add to the user object. Merged with the default tags `Environment`, `Name` & `ManagedBy`                                                                                                                                                                                          |             |                         |    |    |
+| user_pgp_key  | Either a base-64 encoded PGP public key, or a keybase username in the form `keybase:some_person_that_exists`.                                                                                                                                                                             |             | `keybase:username`      |    |    |
+| bucket_name   | The name of the bucket. If omitted, Terraform will assign a random, unique name. Must be less than or equal to 63 characters in length.                                                                                                                                                   |             |                         |    |    |
+| bucket_tags   | Tags to add to the bucket. Merged with the default tags `Environment`, `Name` & `ManagedBy`.                                                                                                                                                                                              |             |                         |    |    |
+| dynamodb_name | The name of the table, this needs to be unique within a region.                                                                                                                                                                                                                           |             | `terraform-lock-wwr234` |    |    |
+| dynamodb_tags | Tags to add to the Dynamo table. Merged with the default tags `Environment`, `Name` & `ManagedBy`.                                                                                                                                                                                        |             | `terraform-lock`        |    |    |
 
 ## How to
 Specify the module source and the provider information.
@@ -22,21 +21,20 @@ Specify the module source and the provider information.
 ### Sample
 ```hcl
 provider "aws" {
-    region = "${var.region}"
-    shared_credentials_file = "${var.credentials_file}"
+    region = "ap-southeast-2"
 }
 
 module "backend" {
-    source = "github.com/gavanlamb/terraform-module-aws-backend"
-    company = ""
-    environment = ""
-    name = ""
-    service = ""
-    group_name 	= "terraform"
-    iam_path	= "terraform"
-    bucket_name = ""
-    bucket_tags = {}
-    dynamodb_name = ""
-    dynamodb_tags = {}
+    environment    = "production"
+    name           = "gavanlamb"
+    iam_group_name = "terraform"
+    iam_path	   = "terraform"
+    username       = "terraform"
+    user_tags      = {}
+    user_pgp_key   = "pgp:admin"
+    bucket_name    = "terraform"
+    bucket_tags    = {}
+    dynamodb_name  = "terraform_lock"
+    dynamodb_tags  = {}
 }
 ```

@@ -1,9 +1,42 @@
-resource "aws_iam_group" "terraform_remote_state" {
-  name = var.group_name
-  path = "/${var.iam_path}/"
+// USER
+resource "aws_iam_user" "terraform" {
+  name                 = var.username
+  path                 = local.iam_path
+  force_destroy        = true
+  tags                 = merge(local.default_tags, var.user_tags)
+}
+resource "aws_iam_user_login_profile" "terraform" {
+  user                    = aws_iam_user.terraform.name
+  pgp_key                 = var.user_pgp_key
+  password_reset_required = false
+}
+resource "aws_iam_access_key" "terraform" {
+  user = aws_iam_user.terraform.name
+}
+resource "aws_iam_policy" "terraform" {
+  description = "Policy for terraform state bucket"
+  name = "terraform"
+  path = local.iam_path
+  policy = data.aws_iam_policy_document.terraform.json
+}
+data "aws_iam_policy_document" "terraform" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "*"
+    ]
+    resources = [
+      "*"
+    ]
+  }
+}
+resource "aws_iam_user_policy_attachment" "terraform"{
+  user       = aws_iam_user.terraform.name
+  policy_arn = aws_iam_policy.terraform.arn
 }
 
-resource "aws_s3_bucket" "terraform_remote_state" {
+// BUCKET
+resource "aws_s3_bucket" "remote_state" {
   bucket = var.bucket_name
   acl = "private"
 
@@ -16,40 +49,35 @@ resource "aws_s3_bucket" "terraform_remote_state" {
   }
 
   tags = merge(local.default_tags, var.bucket_tags)
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = aws_kms_key.remote_state_key.arn
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
 }
-resource "aws_s3_account_public_access_block" "terraform_remote_state" {
+resource "aws_s3_account_public_access_block" "remote_state" {
   block_public_acls       = true
   block_public_policy     = true
   restrict_public_buckets = true
   ignore_public_acls      = true
 }
-resource "aws_iam_policy" "terraform_remote_state" {
-  name = aws_s3_bucket.terraform_remote_state.id
-  path = "/${var.iam_path}/"
-  description = "Policy for terraform state bucket"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket",
-        "s3:GetObject",
-        "s3:PutObject"
-      ],
-      "Resource": "${aws_s3_bucket.terraform_remote_state.arn}"
-    }
-  ]
-}
-EOF
-}
-resource "aws_iam_group_policy_attachment" "test-terraform_remote_state" {
-  group = aws_iam_group.terraform_remote_state.name
-  policy_arn = aws_iam_policy.terraform_remote_state.arn
+
+// KMS
+resource "aws_kms_key" "remote_state_key" {
+  description             = "This key is used to encrypt bucket objects"
+  deletion_window_in_days = 10
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
-resource "aws_dynamodb_table" "terraform_remote_state_lock" {
+// DYNAMO
+resource "aws_dynamodb_table" "lock_table" {
   name = var.dynamodb_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key = "LockID"
@@ -59,30 +87,8 @@ resource "aws_dynamodb_table" "terraform_remote_state_lock" {
     type = "S"
   }
 
+  lifecycle {
+    prevent_destroy = true
+  }
   tags = merge(local.default_tags, var.dynamodb_tags)
-}
-resource "aws_iam_policy" "terraform_remote_state_lock" {
-  name = var.dynamodb_name
-  path = "/${var.iam_path}/"
-  description = "Policy for terraform dynamodb state lock table"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:GetItem",
-        "dynamodb:PutItem",
-        "dynamodb:DeleteItem"
-      ],
-      "Resource": "${aws_dynamodb_table.terraform_remote_state_lock.arn}"
-    }
-  ]
-}
-EOF
-}
-resource "aws_iam_group_policy_attachment" "test-terraform_remote_state_lock" {
-  group = aws_iam_group.terraform_remote_state.name
-  policy_arn = aws_iam_policy.terraform_remote_state_lock.arn
 }

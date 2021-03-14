@@ -1,52 +1,57 @@
-variable "company" {
-  type = string
-  description = "Company name"
-}
 variable "environment" {
-  type = string
-  description = "Environment name"
+  description = "Environment name. This value is used as a tag."
+  type        = string
 }
 variable "name" {
-  type = string
-  description = "Name"
+  description = "Name of infrastructure. This value is used in tags."
+  type        = string
 }
-variable "service" {
-  type = string
-  description = "Service name"
-}
-variable "group_name" {
-  type = string
-  description = "The group for all the terraform policies"
-}
+
 variable "iam_path" {
-  type = string
-  description = "The path to store policies and groups"
+  description = "Path name to store IAM policies and groups."
+  type        = string
+  default     = "terraform"
 }
+variable "username" {
+  description = "The user's name. The name must consist of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: =,.@-_.. User names are not distinguished by case. For example, you cannot create users named both 'TESTUSER' and 'testuser'."
+  type        = string
+  default     = "terraform"
+}
+variable "user_tags" {
+  description = "Tags to add to the user object. Merged with the default tags `Environment`, `Name` & `ManagedBy`."
+  type        = map(string)
+  default     = {}
+}
+variable "user_pgp_key" {
+  description = "Either a base-64 encoded PGP public key, or a keybase username in the form `keybase:some_person_that_exists`. "
+  type        = string
+}
+
 variable "bucket_name" {
-  type = string
-  description = "Name of the bucket"
+  description = "The name of the bucket. If omitted, Terraform will assign a random, unique name. Must be less than or equal to 63 characters in length."
+  type        = string
 }
 variable "bucket_tags" {
-  description = "Tags for the s3 bucket"
-  type = "map"
-  default = {}
+  description = "Tags to add to the bucket. Merged with the default tags `Environment`, `Name` & `ManagedBy`."
+  type        = map(string)
+  default     = {}
 }
+
 variable "dynamodb_name" {
-  type = string
-  description = "Name of the dynamodb table"
+  description = "The name of the table, this needs to be unique within a region."
+  type        = string
 }
 variable "dynamodb_tags" {
-  description = "Tags for the dynamodb table"
-  type = "map"
-  default = {}
+  description = "Tags to add to the Dynamo table. Merged with the default tags `Environment`, `Name` & `ManagedBy`"
+  type        = map(string)
+  default     = {}
 }
 
 locals {
   default_tags = {
-    Company = var.company
     Environment = var.environment
     Name = var.name
-    service = var.service
     ManagedBy = "Terraform"
   }
+  iam_path = "/${var.iam_path}/"
 }
