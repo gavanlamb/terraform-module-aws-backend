@@ -27,7 +27,6 @@ provider "aws" {
 module "backend" {
     environment    = "production"
     name           = "gavanlamb"
-    iam_group_name = "terraform"
     iam_path	   = "terraform"
     username       = "terraform"
     user_tags      = {}
