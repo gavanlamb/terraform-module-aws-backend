@@ -5,11 +5,6 @@ resource "aws_iam_user" "terraform" {
   force_destroy        = true
   tags                 = merge(local.default_tags, var.user_tags)
 }
-resource "aws_iam_user_login_profile" "terraform" {
-  user                    = aws_iam_user.terraform.name
-  pgp_key                 = var.user_pgp_key
-  password_reset_required = false
-}
 resource "aws_iam_access_key" "terraform" {
   user = aws_iam_user.terraform.name
 }
