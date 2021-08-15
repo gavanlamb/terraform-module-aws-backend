@@ -1,16 +1,16 @@
 // USER
 resource "aws_iam_user" "terraform" {
-  name                 = var.username
-  path                 = local.iam_path
-  force_destroy        = true
-  tags                 = merge(local.default_tags, var.user_tags)
+  name = var.username
+  path = local.iam_path
+  force_destroy = true
+  tags = merge(local.default_tags, var.user_tags)
 }
 resource "aws_iam_access_key" "terraform" {
   user = aws_iam_user.terraform.name
 }
 resource "aws_iam_policy" "terraform" {
   description = "Policy for terraform state bucket"
-  name = "terraform"
+  name = var.policy_name
   path = local.iam_path
   policy = data.aws_iam_policy_document.terraform.json
 }
@@ -25,8 +25,8 @@ data "aws_iam_policy_document" "terraform" {
     ]
   }
 }
-resource "aws_iam_user_policy_attachment" "terraform"{
-  user       = aws_iam_user.terraform.name
+resource "aws_iam_user_policy_attachment" "terraform" {
+  user = aws_iam_user.terraform.name
   policy_arn = aws_iam_policy.terraform.arn
 }
 
@@ -49,21 +49,21 @@ resource "aws_s3_bucket" "remote_state" {
     rule {
       apply_server_side_encryption_by_default {
         kms_master_key_id = aws_kms_key.remote_state_key.arn
-        sse_algorithm     = "aws:kms"
+        sse_algorithm = "aws:kms"
       }
     }
   }
 }
 resource "aws_s3_account_public_access_block" "remote_state" {
-  block_public_acls       = true
-  block_public_policy     = true
+  block_public_acls = true
+  block_public_policy = true
   restrict_public_buckets = true
-  ignore_public_acls      = true
+  ignore_public_acls = true
 }
 
 // KMS
 resource "aws_kms_key" "remote_state_key" {
-  description             = "This key is used to encrypt bucket objects"
+  description = "This key is used to encrypt bucket objects"
   deletion_window_in_days = 10
 
   lifecycle {
