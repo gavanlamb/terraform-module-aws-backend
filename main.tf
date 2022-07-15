@@ -3,7 +3,7 @@ resource "aws_iam_user" "terraform" {
   name = var.username
   path = local.iam_path
   force_destroy = true
-  tags = merge(local.default_tags, var.user_tags)
+  tags = merge(local.default_tags, var.tags)
 }
 resource "aws_iam_access_key" "terraform" {
   user = aws_iam_user.terraform.name
@@ -43,7 +43,7 @@ resource "aws_s3_bucket" "remote_state" {
     prevent_destroy = true
   }
 
-  tags = merge(local.default_tags, var.bucket_tags)
+  tags = merge(local.default_tags, var.tags)
 
   server_side_encryption_configuration {
     rule {
@@ -66,45 +66,19 @@ resource "aws_s3_bucket_public_access_block" "remote_state" {
 resource "aws_kms_key" "remote_state_key" {
   description = "This key is used to encrypt bucket objects"
   deletion_window_in_days = 10
-
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
-// DYNAMO
-resource "aws_dynamodb_table" "lock_table" {
-  name = var.dynamodb_name
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-
-  server_side_encryption { 
-    enabled = true
-    kms_key_arn = aws_kms_alias.terraform_key.arn
-  }
-  
-  lifecycle {
-    prevent_destroy = true
-  }
-  tags = merge(local.default_tags, var.dynamodb_tags)
-}
-
-resource "aws_kms_key" "terraform_key" {
-  description = "KMS key for cloudwatch"
-  deletion_window_in_days = 10
+  enable_key_rotation = true
   policy = data.aws_iam_policy_document.terraform.json
-}
+  tags = merge(local.default_tags, var.tags)
 
-resource "aws_kms_alias" "terraform_key" {
-  name = "alias/expensely/${lower(var.environment)}/${var.name}"
-  target_key_id = aws_kms_key.terraform_key.key_id
+  lifecycle {
+    prevent_destroy = true
+  }
 }
-data "aws_iam_policy_document" "terraform_key" {
+resource "aws_kms_alias" "remote_state_key" {
+  name = "alias/expensely/${lower(var.environment)}/${var.key_name}"
+  target_key_id = aws_kms_key.remote_state_key.key_id
+}
+data "aws_iam_policy_document" "remote_state_key" {
   statement {
     effect = "Allow"
     actions = [
@@ -175,4 +149,30 @@ data "aws_iam_policy_document" "terraform_key" {
       ]
     }
   }
+}
+
+
+// DYNAMO
+resource "aws_dynamodb_table" "lock_table" {
+  name = var.dynamodb_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key = "LockID"
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+  server_side_encryption { 
+    enabled = true
+    kms_key_arn = aws_kms_alias.remote_state_key.arn
+  }
+  
+  lifecycle {
+    prevent_destroy = true
+  }
+  tags = merge(local.default_tags, var.tags)
 }
