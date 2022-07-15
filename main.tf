@@ -83,6 +83,10 @@ resource "aws_dynamodb_table" "lock_table" {
     type = "S"
   }
 
+  server_side_encryption { 
+    enabled = true
+  }
+  
   lifecycle {
     prevent_destroy = true
   }
