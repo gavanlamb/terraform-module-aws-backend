@@ -12,7 +12,6 @@ Provision AWS resources for Terraform backend
 | bucket_name       | Name of the bucket. If omitted, Terraform will assign a random, unique name. Must be less than or equal to 63 characters in length.                                                                                                                                                       |                 |                          |
 | dynamodb_name     | Name of the table, this needs to be unique within the specified region.                                                                                                                                                                                                                   |                 |                          |
 | key_name          | Name of the key, this needs to be unique.                                                                                                                                                                                                                                                 | `terraform-key` |                          |
-| username          | The user's name. The name must consist of upper and lowercase alphanumeric characters with no spaces. You can also include any of the following characters: =,.@-_.. User names are not distinguished by case. For example, you cannot create users named both 'TESTUSER' and 'testuser'. | `terraform`     | `creator`                |
 
 ## How to
 Specify the module source and the provider information.
@@ -32,7 +31,6 @@ module "backend" {
     bucket_name = "terraform"
     dynamodb_name = "terraform_lock"
     key_name = "terraform"
-    username = "terraform"
     tags = {}
 }
 ```
