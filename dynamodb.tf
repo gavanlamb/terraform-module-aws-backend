@@ -18,7 +18,7 @@ resource "aws_dynamodb_table" "lock_table" {
 
   server_side_encryption {
     enabled = true
-    kms_key_arn = aws_kms_alias.remote_state_key.arn
+    kms_key_arn = aws_kms_alias.remote_state_key.target_key_arn
   }
 
   lifecycle {
