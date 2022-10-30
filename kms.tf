@@ -3,6 +3,11 @@ variable "key_name"{
   type = string
   default = "terraform-key"
 }
+variable "organisation_name"{
+  description = "Name of the organisation"
+  type = string
+  default = "expensely"
+}
 
 resource "aws_kms_key" "remote_state_key" {
   description = "This key is used to encrypt bucket objects"
@@ -16,7 +21,7 @@ resource "aws_kms_key" "remote_state_key" {
   }
 }
 resource "aws_kms_alias" "remote_state_key" {
-  name = "alias/expensely/${lower(var.environment)}/${var.key_name}/backend"
+  name = "alias/${lower(var.organisation_name)}/${lower(var.environment)}/${var.key_name}/backend"
   target_key_id = aws_kms_key.remote_state_key.key_id
 }
 
